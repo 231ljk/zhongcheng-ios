@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build iOS app
+      - name: Build iOS binary
         run: |
           xcodebuild -resolvePackageDependencies
           xcodebuild \
@@ -24,16 +24,49 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build
 
-      - name: Package IPA
+      - name: Assemble .app and IPA
         run: |
-          APP_PATH=$(find build/Build/Products -name "ZhongchengApp.app" -type d | head -1)
+          set -e
+          PROD=build/Build/Products/Release-iphoneos
+          APP=ZhongchengApp.app
+          rm -rf "$APP" Payload zhongcheng-ios-1.15.0.ipa
+          mkdir -p "$APP"
+          cp "$PROD/ZhongchengApp" "$APP/ZhongchengApp"
+          cp -R "$PROD/ZhongchengApp_ZhongchengApp.bundle" "$APP/" 2>/dev/null || true
+          cat > "$APP/Info.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleExecutable</key><string>ZhongchengApp</string>
+            <key>CFBundleIdentifier</key><string>com.zhongcheng.ios</string>
+            <key>CFBundleName</key><string>ZhongCheng</string>
+            <key>CFBundleDisplayName</key><string>ZhongCheng</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>CFBundleVersion</key><string>1</string>
+            <key>CFBundleShortVersionString</key><string>1.15.0</string>
+            <key>CFBundleSupportedPlatforms</key><array><string>iPhoneOS</string></array>
+            <key>MinimumOSVersion</key><string>15.0</string>
+            <key>LSRequiresIPhoneOS</key><true/>
+            <key>UIDeviceFamily</key><array><integer>1</integer><integer>2</integer></array>
+            <key>UILaunchScreen</key><dict/>
+            <key>UISupportedInterfaceOrientations</key>
+            <array>
+              <string>UIInterfaceOrientationPortrait</string>
+              <string>UIInterfaceOrientationLandscapeLeft</string>
+              <string>UIInterfaceOrientationLandscapeRight</string>
+            </array>
+          </dict>
+          </plist>
+          PLIST
           mkdir -p Payload
-          cp -R "$APP_PATH" Payload/
-          zip -r 中文程-iOS-1.15.0.ipa Payload
+          cp -R "$APP" Payload/
+          zip -r zhongcheng-ios-1.15.0.ipa Payload
           rm -rf Payload
+          ls -lh zhongcheng-ios-1.15.0.ipa
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: zhongcheng-ios-ipa
-          path: 中文程-iOS-1.15.0.ipa
+          path: zhongcheng-ios-1.15.0.ipa
