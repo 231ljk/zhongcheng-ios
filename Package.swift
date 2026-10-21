@@ -5,10 +5,10 @@ let package = Package(
     name: "ZhongchengApp",
     platforms: [.iOS(.v15)],
     products: [
-        .library(name: "ZhongchengApp", targets: ["ZhongchengApp"])
+        .executable(name: "ZhongchengApp", targets: ["ZhongchengApp"])
     ],
     targets: [
-        .target(
+        .executableTarget(
             name: "ZhongchengApp",
             resources: [.copy("Resources/index.html")]
         )
