@@ -1,0 +1,8 @@
+{
+  "name": "zhongcheng-desktop",
+  "productName": "中文程",
+  "version": "1.15.0",
+  "description": "中文程 · 中文编程语言 · 官方桌面版",
+  "main": "main.js",
+  "author": "中文程官方"
+}
