@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>中文程 · 桌面版</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Microsoft YaHei", sans-serif; height: 100vh; display: flex; flex-direction: column; background: #14181f; color: #e8eaed; }
+  header { padding: 10px 18px; background: #1a1f28; border-bottom: 1px solid #262c37; display: flex; align-items: center; gap: 14px; }
+  header h1 { font-size: 17px; margin: 0; font-weight: 600; }
+  header .tag { font-size: 11px; opacity: .55; }
+  main { flex: 1; display: flex; min-height: 0; }
+  .left { flex: 1.2; display: flex; flex-direction: column; border-right: 1px solid #262c37; min-width: 0; }
+  .tabs { display: flex; gap: 2px; background: #1a1f28; padding: 4px 8px 0; }
+  .tabs button { background: transparent; border: none; color: #9aa4b2; padding: 8px 16px; cursor: pointer; font-size: 13px; border-radius: 6px 6px 0 0; }
+  .tabs button.on { background: #14181f; color: #fff; }
+  textarea#code { flex: 1; background: #14181f; color: #d7e2ee; border: none; outline: none; resize: none; padding: 14px; font-family: Consolas, monospace; font-size: 14px; line-height: 1.65; }
+  .runbar { padding: 10px 14px; background: #1a1f28; display: flex; gap: 10px; }
+  .runbar button { background: #2f81f7; color: #fff; border: none; padding: 9px 26px; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .runbar button:hover { filter: brightness(1.1); }
+  #output { flex: 1; overflow: auto; padding: 14px; font-family: Consolas, monospace; font-size: 13px; white-space: pre-wrap; color: #c8d4e0; background: #0e1116; }
+  .right { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #chat { flex: 1; overflow: auto; padding: 14px; }
+  .msg { margin: 8px 0; padding: 10px 13px; border-radius: 10px; font-size: 13.5px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+  .msg.user { background: #23405f; margin-left: 12%; }
+  .msg.ai { background: #1d232e; margin-right: 8%; color: #ffffff; }
+  .status { font-size: 11.5px; color: #7d8a99; padding: 2px 14px; min-height: 18px; }
+  .askbar { display: flex; gap: 8px; padding: 10px 14px; background: #1a1f28; }
+  .askbar input { flex: 1; background: #14181f; border: 1px solid #2a3240; color: #e8eaed; padding: 10px 12px; border-radius: 8px; font-family: inherit; font-size: 13.5px; outline: none; }
+  .askbar button { background: #2ea043; border: none; color: #fff; padding: 0 20px; border-radius: 8px; cursor: pointer; font-family: inherit; }
+  code { color: #e6e6e6; background: #0e1116; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>中文程</h1><span class="tag">桌面版 v1.15.0 · 全中文编程语言</span>
+</header>
+<main>
+  <div class="left">
+    <div class="tabs">
+      <button id="tabCode" class="on">代码</button>
+      <button id="tabOut">运行结果</button>
+    </div>
+    <textarea id="code" spellcheck="false">写("你好，世界！")
+
+设 名字 = "中文程"
+写("欢迎来到 " + 名字 + "！")
+
+对于 i 从 1 到 5 {
+  写("第 " + i + " 次问好")
+}</textarea>
+    <div id="outWrap" style="display:none; flex:1; flex-direction:column; min-height:0;">
+      <div id="output"></div>
+    </div>
+    <div class="runbar">
+      <button id="btnRun">▶ 运行</button>
+      <button id="btnClear" style="background:#30363d;">清空结果</button>
+    </div>
+  </div>
+  <div class="right">
+    <div id="chat"></div>
+    <div class="status" id="aiStatus"></div>
+    <div class="askbar">
+      <input id="q" placeholder="问 AI：写一个操作系统 / 验证码服务器 / 爬虫…" />
+      <button id="btnAsk">发送</button>
+    </div>
+  </div>
+</main>
+<script>
+  const code = document.getElementById("code");
+  const out = document.getElementById("output");
+  const outWrap = document.getElementById("outWrap");
+  const chat = document.getElementById("chat");
+  const statusEl = document.getElementById("aiStatus");
+  const tabCode = document.getElementById("tabCode"), tabOut = document.getElementById("tabOut");
+
+  tabCode.onclick = () => { tabCode.classList.add("on"); tabOut.classList.remove("on"); code.style.display = "block"; outWrap.style.display = "none"; };
+  tabOut.onclick = () => { tabOut.classList.add("on"); tabCode.classList.remove("on"); code.style.display = "none"; outWrap.style.display = "flex"; };
+
+  function addMsg(text, who) {
+    const d = document.createElement("div");
+    d.className = "msg " + who;
+    d.textContent = text;
+    chat.appendChild(d);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  document.getElementById("btnRun").onclick = async () => {
+    out.textContent = "⏳ 运行中…";
+    tabOut.click();
+    const r = await window.zc.runCode(code.value);
+    out.textContent = r || "(无输出)";
+  };
+  document.getElementById("btnClear").onclick = () => { out.textContent = ""; };
+
+  async function ask() {
+    const q = document.getElementById("q").value.trim();
+    if (!q) return;
+    document.getElementById("q").value = "";
+    addMsg(q, "user");
+    statusEl.textContent = "🧠 思考中…";
+    const r = await window.zc.aiAsk(q);
+    statusEl.textContent = "";
+    addMsg(r, "ai");
+  }
+  document.getElementById("btnAsk").onclick = ask;
+  document.getElementById("q").addEventListener("keydown", (e) => { if (e.key === "Enter") ask(); });
+  window.zc.onAiStatus((m) => { statusEl.textContent = m; });
+  addMsg("你好！我是中文程官方 AI 助手。\n\n可以直接问我：\n· 「写一个操作系统」\n· 「验证码服务器怎么写」\n· 「什么是变量/循环/函数」\n\n左侧写代码，点「运行」立即执行。", "ai");
+</script>
+</body>
+</html>
