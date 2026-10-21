@@ -1,0 +1,62 @@
+name: Build macOS DMG
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Electron runtime
+        run: |
+          set -e
+          curl -L --retry 3 -o electron.zip "https://github.com/electron/electron/releases/download/v33.4.11/electron-v33.4.11-darwin-x64.zip"
+          unzip -q electron.zip -d dist
+
+      - name: Make app icon
+        run: |
+          set -e
+          mkdir icon.iconset
+          sips -z 16 16 icon.png --out icon.iconset/icon_16x16.png
+          sips -z 32 32 icon.png --out icon.iconset/icon_16x16@2x.png
+          sips -z 32 32 icon.png --out icon.iconset/icon_32x32.png
+          sips -z 64 64 icon.png --out icon.iconset/icon_32x32@2x.png
+          sips -z 128 128 icon.png --out icon.iconset/icon_128x128.png
+          sips -z 256 256 icon.png --out icon.iconset/icon_128x128@2x.png
+          sips -z 256 256 icon.png --out icon.iconset/icon_256x256.png
+          sips -z 512 512 icon.png --out icon.iconset/icon_256x256@2x.png
+          sips -z 512 512 icon.png --out icon.iconset/icon_512x512.png
+          sips -z 1024 1024 icon.png --out icon.iconset/icon_512x512@2x.png
+          iconutil -c icns icon.iconset -o app.icns
+
+      - name: Assemble app bundle
+        run: |
+          set -e
+          APP="中文程.app"
+          mv dist/Electron.app "$APP"
+          PLIST="$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleName 中文程" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName 中文程" "$PLIST" 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string 中文程" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.zhongcheng.desktop" "$PLIST"
+          cp app.icns "$APP/Contents/Resources/electron.icns"
+          mkdir -p "$APP/Contents/Resources/app"
+          cp -R mac/app/. "$APP/Contents/Resources/app/"
+          rm -f "$APP/Contents/Resources/default_app.asar"
+          codesign --force --deep --sign - "$APP" || true
+
+      - name: Create DMG installer
+        run: |
+          set -e
+          mkdir dmgsrc
+          cp -R "中文程.app" dmgsrc/
+          ln -s /Applications dmgsrc/Applications
+          hdiutil create -volname "中文程" -srcfolder dmgsrc -ov -format UDZO "zhongcheng-macos-1.15.0.dmg"
+          ls -lh zhongcheng-macos-1.15.0.dmg
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: zhongcheng-macos-dmg
+          path: zhongcheng-macos-1.15.0.dmg
