@@ -2,111 +2,111 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>中文程 · 桌面版</title>
-<style>
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: "Microsoft YaHei", sans-serif; height: 100vh; display: flex; flex-direction: column; background: #14181f; color: #e8eaed; }
-  header { padding: 10px 18px; background: #1a1f28; border-bottom: 1px solid #262c37; display: flex; align-items: center; gap: 14px; }
-  header h1 { font-size: 17px; margin: 0; font-weight: 600; }
-  header .tag { font-size: 11px; opacity: .55; }
-  main { flex: 1; display: flex; min-height: 0; }
-  .left { flex: 1.2; display: flex; flex-direction: column; border-right: 1px solid #262c37; min-width: 0; }
-  .tabs { display: flex; gap: 2px; background: #1a1f28; padding: 4px 8px 0; }
-  .tabs button { background: transparent; border: none; color: #9aa4b2; padding: 8px 16px; cursor: pointer; font-size: 13px; border-radius: 6px 6px 0 0; }
-  .tabs button.on { background: #14181f; color: #fff; }
-  textarea#code { flex: 1; background: #14181f; color: #d7e2ee; border: none; outline: none; resize: none; padding: 14px; font-family: Consolas, monospace; font-size: 14px; line-height: 1.65; }
-  .runbar { padding: 10px 14px; background: #1a1f28; display: flex; gap: 10px; }
-  .runbar button { background: #2f81f7; color: #fff; border: none; padding: 9px 26px; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; }
-  .runbar button:hover { filter: brightness(1.1); }
-  #output { flex: 1; overflow: auto; padding: 14px; font-family: Consolas, monospace; font-size: 13px; white-space: pre-wrap; color: #c8d4e0; background: #0e1116; }
-  .right { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-  #chat { flex: 1; overflow: auto; padding: 14px; }
-  .msg { margin: 8px 0; padding: 10px 13px; border-radius: 10px; font-size: 13.5px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
-  .msg.user { background: #23405f; margin-left: 12%; }
-  .msg.ai { background: #1d232e; margin-right: 8%; color: #ffffff; }
-  .status { font-size: 11.5px; color: #7d8a99; padding: 2px 14px; min-height: 18px; }
-  .askbar { display: flex; gap: 8px; padding: 10px 14px; background: #1a1f28; }
-  .askbar input { flex: 1; background: #14181f; border: 1px solid #2a3240; color: #e8eaed; padding: 10px 12px; border-radius: 8px; font-family: inherit; font-size: 13.5px; outline: none; }
-  .askbar button { background: #2ea043; border: none; color: #fff; padding: 0 20px; border-radius: 8px; cursor: pointer; font-family: inherit; }
-  code { color: #e6e6e6; background: #0e1116; padding: 1px 5px; border-radius: 4px; }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>中文程 · 中文编程软件</title>
+<!-- 苹果 Web App：Safari 打开 → 分享 → 添加到主屏幕，即变全屏独立 App -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="中文程">
+<meta name="theme-color" content="#14181f">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header>
-  <h1>中文程</h1><span class="tag">桌面版 v1.15.0 · 全中文编程语言</span>
+
+<!-- ================= 顶部工具栏 ================= -->
+<header class="toolbar">
+  <div class="brand">
+    <span class="brand-logo">中</span>
+    <span class="brand-name">中文程</span>
+    <span class="brand-sub">个人中文编程软件 · 完全自主开发</span>
+  </div>
+  <div class="toolbar-actions">
+    <button id="btn新建" title="新建文件">新建</button>
+    <button id="btn保存" title="保存到本机 (Ctrl+S)">保存</button>
+    <button id="btn导出" title="导出 .zy 文件">导出</button>
+    <button id="btn导入" title="导入 .zy 文件">导入</button>
+    <span class="sep"></span>
+    <button id="btn运行" class="primary" title="运行程序 (Ctrl+R)">▶ 运行</button>
+    <button id="btn停止" class="danger" disabled title="停止程序">■ 停止</button>
+    <span class="sep"></span>
+    <select id="方言选择" title="切换中文编程方言（语言）">
+      <option value="zh">简体中文程</option>
+      <option value="trad">繁体中文程</option>
+      <option value="pinyin">拼音中文程</option>
+    </select>
+    <span class="sep"></span>
+    <button id="btn设置" title="软件设置（AI / 命令行 / 账号）">⚙ 设置</button>
+  </div>
 </header>
-<main>
-  <div class="left">
-    <div class="tabs">
-      <button id="tabCode" class="on">代码</button>
-      <button id="tabOut">运行结果</button>
-    </div>
-    <textarea id="code" spellcheck="false">写("你好，世界！")
 
-设 名字 = "中文程"
-写("欢迎来到 " + 名字 + "！")
+<!-- ================= 主体 ================= -->
+<main class="main">
 
-对于 i 从 1 到 5 {
-  写("第 " + i + " 次问好")
-}</textarea>
-    <div id="outWrap" style="display:none; flex:1; flex-direction:column; min-height:0;">
-      <div id="output"></div>
+  <!-- 左侧：文件栏 -->
+  <aside class="sidebar">
+    <div class="side-head">
+      <span>我的程序</span>
+      <button id="btn新建2" title="新建文件">＋</button>
     </div>
-    <div class="runbar">
-      <button id="btnRun">▶ 运行</button>
-      <button id="btnClear" style="background:#30363d;">清空结果</button>
+    <ul id="用户文件列表" class="file-list"></ul>
+    <div class="side-head side-head2"><span>内置示例</span></div>
+    <ul id="示例列表" class="file-list"></ul>
+  </aside>
+
+  <!-- 中间：编辑器 -->
+  <section class="editor-pane">
+    <div class="file-tab"><span id="当前文件名">未命名</span><span id="文件状态" class="file-status"></span></div>
+    <div id="编辑器容器" class="editor-container"></div>
+    <div class="statusbar">
+      <span id="状态行列">行 1, 列 1</span>
+      <span id="状态方言">简体中文程</span>
+      <span id="状态提示"></span>
     </div>
-  </div>
-  <div class="right">
-    <div id="chat"></div>
-    <div class="status" id="aiStatus"></div>
-    <div class="askbar">
-      <input id="q" placeholder="问 AI：写一个操作系统 / 验证码服务器 / 爬虫…" />
-      <button id="btnAsk">发送</button>
-    </div>
-  </div>
+  </section>
+
+  <!-- 右侧：AI 助手 -->
+  <aside class="ai-pane">
+    <div id="AI面板" class="ai-panel"></div>
+  </aside>
+
 </main>
-<script>
-  const code = document.getElementById("code");
-  const out = document.getElementById("output");
-  const outWrap = document.getElementById("outWrap");
-  const chat = document.getElementById("chat");
-  const statusEl = document.getElementById("aiStatus");
-  const tabCode = document.getElementById("tabCode"), tabOut = document.getElementById("tabOut");
 
-  tabCode.onclick = () => { tabCode.classList.add("on"); tabOut.classList.remove("on"); code.style.display = "block"; outWrap.style.display = "none"; };
-  tabOut.onclick = () => { tabOut.classList.add("on"); tabCode.classList.remove("on"); code.style.display = "none"; outWrap.style.display = "flex"; };
+<!-- ================= 底部输出区 ================= -->
+<footer class="console-pane">
+  <div class="console-tabs">
+    <button class="ctab on" data-tab="控制台">控制台</button>
+    <button class="ctab" data-tab="画布">画布</button>
+    <button class="ctab" data-tab="命令行">命令行</button>
+    <button id="清屏按钮" title="清空当前页签">清空</button>
+    <button id="收回按钮" title="收回面板，避免挡住界面">▼ 收回</button>
+  </div>
+  <div id="控制台区" class="console-body"></div>
+  <div id="画布区" class="canvas-body" hidden>
+    <div id="画布容器"></div>
+  </div>
+  <div id="命令行区" class="term-body" hidden></div>
+</footer>
 
-  function addMsg(text, who) {
-    const d = document.createElement("div");
-    d.className = "msg " + who;
-    d.textContent = text;
-    chat.appendChild(d);
-    chat.scrollTop = chat.scrollHeight;
-  }
+<!-- ================= 输入弹窗（读入） ================= -->
+<div id="输入弹窗" class="modal" hidden>
+  <div class="modal-box">
+    <div id="输入提示" class="modal-tip">请输入：</div>
+    <input id="输入框" type="text">
+    <div class="modal-btns"><button id="输入确定" class="primary">确定</button><button id="输入取消">取消</button></div>
+  </div>
+</div>
 
-  document.getElementById("btnRun").onclick = async () => {
-    out.textContent = "⏳ 运行中…";
-    tabOut.click();
-    const r = await window.zc.runCode(code.value);
-    out.textContent = r || "(无输出)";
-  };
-  document.getElementById("btnClear").onclick = () => { out.textContent = ""; };
-
-  async function ask() {
-    const q = document.getElementById("q").value.trim();
-    if (!q) return;
-    document.getElementById("q").value = "";
-    addMsg(q, "user");
-    statusEl.textContent = "🧠 思考中…";
-    const r = await window.zc.aiAsk(q);
-    statusEl.textContent = "";
-    addMsg(r, "ai");
-  }
-  document.getElementById("btnAsk").onclick = ask;
-  document.getElementById("q").addEventListener("keydown", (e) => { if (e.key === "Enter") ask(); });
-  window.zc.onAiStatus((m) => { statusEl.textContent = m; });
-  addMsg("你好！我是中文程官方 AI 助手。\n\n可以直接问我：\n· 「写一个操作系统」\n· 「验证码服务器怎么写」\n· 「什么是变量/循环/函数」\n\n左侧写代码，点「运行」立即执行。", "ai");
-</script>
+<script src="js/dialects.js"></script>
+<script src="js/lexer.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/interpreter.js"></script>
+<script src="js/stdlib.js"></script>
+<script src="js/files.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/terminal.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
