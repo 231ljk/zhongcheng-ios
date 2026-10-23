@@ -112,6 +112,29 @@ ipcMain.handle("openExternal", async (_e, url) => {
   if (/^https?:\/\//i.test(String(url))) await shell.openExternal(String(url));
 });
 
+/* ---------- 命令行面板：外部命令行（CMD/PowerShell）真实执行 ----------
+ * 与 host.execCommand 共用同一套安全护栏；危险命令直接拒绝。 */
+ipcMain.handle("execShellCommand", async (_e, shellName, cmd) => {
+  const C = String(cmd).toLowerCase();
+  const hit = DANGEROUS.find((d) => C.includes(d));
+  if (hit) {
+    return "⛔ 安全护栏：命令被拒绝执行（含破坏性操作「" + hit + "」）。中文程禁止用于破坏电脑的行为。";
+  }
+  const isPs = String(shellName).toLowerCase().indexOf("powershell") !== -1;
+  const spawnArgs = isPs
+    ? ["powershell.exe", ["-NoProfile", "-Command", String(cmd)]]
+    : ["cmd.exe", ["/c", String(cmd)]];
+  return await new Promise((resolve) => {
+    cp.execFile(spawnArgs[0], spawnArgs[1], { encoding: "utf8", timeout: 30000, windowsHide: true, maxBuffer: 1024 * 1024 },
+      (err, stdout, stderr) => {
+        let out = String(stdout || "");
+        if (stderr) out += (out ? "\n" : "") + String(stderr);
+        if (err && !out) out = "命令失败：" + err.message;
+        resolve(out.replace(/\r\n/g, "\n").replace(/\n+$/, "") || "(命令已执行，无输出)");
+      });
+  });
+});
+
 /* ---------- 真实网络（桌面版网络能力：httpGet/httpPost） ---------- */
 const http = require("http");
 const https = require("https");
